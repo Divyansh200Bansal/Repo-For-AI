@@ -34,6 +34,31 @@ A 30-minute morning routine for CAT VARC: 5 finance stories, an original CAT-sty
 
 On Windows, type `py` instead of `python` if `python` is not found.
 
+## Run it in Google Colab
+
+Don't paste `varc.py` into a cell. A cell is not a file, so Python has no `__file__` and the script can't find its folder. Keep the kit in Google Drive and run the file with `!python`.
+
+One time: upload `cat-varc-kit.zip` to My Drive, then run this cell:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+%cd /content/drive/MyDrive
+!unzip -o cat-varc-kit.zip
+```
+
+Save your log in `My Drive/cat-varc-kit/` as `CAT_VARC_Mistake_Log.xlsx`. Every time you open Colab, run this first, because Colab forgets everything when its runtime restarts:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+%cd /content/drive/MyDrive/cat-varc-kit
+```
+
+Then use the commands with `!` in front: `!python varc.py brief`, then `print(open('prompt_today.txt').read())` to copy the prompt; `!python -u varc.py timer`, pressing Enter in the box under the cell; and `!python varc.py stats`. Colab's input box takes one line at a time, so for `log`, save the block to a file first: start a cell with `%%writefile block.txt`, paste the block below that line, run it, then run `!python varc.py log --from-file block.txt`.
+
+Keep the folder in Drive. Colab's own disk is wiped when the runtime resets, and your log would go with it.
+
 ## Rules the script follows
 
 - Question mix: 1 Main idea, 2 Inference, 1 Detail, 1 Tone, 1 Vocab in context. If a type has 3+ attempts and accuracy below 60%, one question of your strongest type (never Main idea) is swapped for an extra one of the weak type.

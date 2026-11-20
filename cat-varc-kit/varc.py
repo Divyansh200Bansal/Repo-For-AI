@@ -31,7 +31,11 @@ try:
 except ImportError:
     sys.exit("openpyxl is missing. Install it with:  pip install openpyxl")
 
-HERE = Path(__file__).resolve().parent
+try:
+    HERE = Path(__file__).resolve().parent  # the folder this script is in
+except NameError:
+    # Pasted into a notebook cell (Colab, Jupyter): there is no file, so use the current folder.
+    HERE = Path.cwd()
 LOG_FILE = HERE / "CAT_VARC_Mistake_Log.xlsx"
 TEMPLATE = HERE / "templates" / "CAT_VARC_Mistake_Log_template.xlsx"
 PROMPT_TEMPLATE = HERE / "prompts" / "free_prompt.md"
@@ -522,7 +526,7 @@ def cmd_stats(args):
                 print(f"  {r:<18}{n:>4}")
 
 
-def main():
+def main(argv=None):
     p = argparse.ArgumentParser(description="Offline helper for the daily CAT VARC routine.")
     p.add_argument("--file", type=Path, default=LOG_FILE,
                    help="mistake log .xlsx (default: CAT_VARC_Mistake_Log.xlsx next to this script)")
@@ -533,9 +537,15 @@ def main():
     lg.add_argument("--from-file", help="read the LOG BLOCK from a text file instead of pasting")
     lg.add_argument("--yes", action="store_true", help="don't ask before adding a repeated day")
     sub.add_parser("stats", help="print the Summary numbers")
-    args = p.parse_args()
+    args = p.parse_args(argv)
     {"brief": cmd_brief, "timer": cmd_timer, "log": cmd_log, "stats": cmd_stats}[args.cmd](args)
 
 
 if __name__ == "__main__":
-    main()
+    if "ipykernel" in sys.modules:
+        # Pasted into a notebook cell: the command line belongs to the notebook, not to this script.
+        print("This is a script, so run the file from a cell instead:\n"
+              "    !python varc.py brief\n"
+              "(or, after pasting this code, call main([\"brief\"]) in the next cell).")
+    else:
+        main()
