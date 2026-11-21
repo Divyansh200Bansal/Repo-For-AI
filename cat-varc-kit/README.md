@@ -1,20 +1,58 @@
 # CAT VARC daily kit
 
-A 30-minute morning routine for CAT VARC: 5 finance stories, an original CAT-style passage with 7 questions, timing, grammar feedback, and a mistake log that picks the next day's questions. It runs two ways.
+A 30-minute morning routine for CAT VARC: 5 finance stories, an original CAT-style passage with 7 questions, timing, grammar feedback, and a mistake log that picks the next day's questions. It runs three ways.
 
-| Step | Pro: Claude cloud session | Free: any plan, on your laptop |
-| --- | --- | --- |
-| News, passage, questions | Claude writes them into a doc | Claude writes them in the chat |
-| Today's question mix | Claude reads your Sheet's Summary tab | `python varc.py brief` reads your Excel log |
-| Timing | Claude runs `date +%s` per message | `python varc.py timer` (press Enter at each step) |
-| Logging | Claude writes rows into your Sheet | `python varc.py log` writes rows into the Excel file |
+| Step | Automatic: `python daily.py` | Pro: Claude cloud session | Free: any chat, by hand |
+| --- | --- | --- | --- |
+| News, passage, questions | Free RSS feeds + the Claude API | Claude writes them into a doc | Claude writes them in the chat |
+| Today's question mix | Read from your Excel log | Claude reads your Sheet's Summary tab | `python varc.py brief` |
+| Timing | Built into the quiz | Claude runs `date +%s` per message | `python varc.py timer` |
+| Debrief and logging | Claude API + your Excel file | Claude writes rows into your Sheet | `python varc.py log` |
+| Cost | Pay per use (see below) | Pro plan | Free |
 
 ## What's in this folder
 
+- `daily.py`: the whole routine in one command (needs an Anthropic API key).
 - `prompts/pro_prompt.md`: the routine for a Claude Code cloud session. Add your Sheet link, then paste it.
 - `prompts/free_prompt.md`: the routine for a free chat. `varc.py brief` fills it in for you.
 - `varc.py`: the helper script (Python 3.8+ and openpyxl).
 - `templates/CAT_VARC_Mistake_Log_template.xlsx`: an empty mistake log with the Summary formulas.
+
+## Fully automatic: `daily.py`
+
+One command does the whole morning. It fetches the last 24 hours of finance headlines from free RSS feeds (Economic Times, Mint, Business Standard, Google News, BBC, CNBC), and Claude writes the 5 stories, the passage and the 7 questions with your log's question mix. You then take the timed quiz in the same window. Claude writes the debrief, and the rows go into your Excel log.
+
+**What it needs:** Python 3.10 or newer, `pip install anthropic openpyxl`, and an Anthropic API key. The API is pay-as-you-go and separate from a Claude Pro subscription: create a key in the Claude Console (platform.claude.com) and add a small prepaid credit.
+
+**What a run costs.** These are rough figures; the script prints the real cost at the end of each run.
+
+| Model | Option | About per day | About per month |
+| --- | --- | --- | --- |
+| Claude Opus 5.5 (default; the best questions) | none | $0.30-0.40 (Rs 30) | $10 (Rs 900) |
+| Claude Sonnet 5.5 | `--model claude-sonnet-5-5` | $0.15-0.20 | $5 |
+| Claude Haiku 5.5 (cheapest; weaker questions) | `--model claude-haiku-5-5` | under $0.01 (Rs 1) | $0.25 |
+
+`--effort medium` makes the model think less and costs less again. If Opus or Sonnet declines a request, the API retries it on another model automatically.
+
+**In Colab:** add the key once under Secrets (the key icon on the left) as `ANTHROPIC_API_KEY`, with notebook access on. Then run this cell each morning:
+
+```python
+from google.colab import drive, userdata
+import os
+drive.mount('/content/drive')
+%cd /content/drive/MyDrive/cat-varc-kit
+!pip install -q anthropic
+os.environ["ANTHROPIC_API_KEY"] = userdata.get("ANTHROPIC_API_KEY")
+!python daily.py
+```
+
+**On a laptop:** set the key once (`export ANTHROPIC_API_KEY=...` on Mac or Linux; `setx ANTHROPIC_API_KEY "..."` on Windows, then open a new terminal), then run `python daily.py`.
+
+**During the run:** read the news, press Enter to start the passage and again when you finish reading, then answer each question: your own answer first, then the option, then your reason. If the run stops half-way, run it again and it continues where you stopped. `--new` makes a second set on the same day.
+
+**Files:** each day gets `days/<date>/`, with `brief.md` (news, passage and questions, to read on your phone), `debrief.md`, and `pack.json`, which holds the answer key, so don't open it before you finish.
+
+**Limits:** Claude sees only the headlines and their short summaries; it does not read the articles. So "what happened" is only as detailed as the headline. If a feed stops working, the run skips it; you can swap feeds by editing `FEEDS` at the top of `daily.py`.
 
 ## Free version: one-time setup
 

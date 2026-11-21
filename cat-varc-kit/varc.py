@@ -258,6 +258,7 @@ def pick_q7(by_type):
 
 
 def build_settings(wb):
+    """Today's settings as prompt text, plus the Q1-Q6 type list and the Q7 type."""
     log_rows = read_rows(wb["Log"], LOG_COLS)
     by_type, reasons = summarize(log_rows)
     mix, note = pick_mix(by_type)
@@ -281,14 +282,14 @@ def build_settings(wb):
     if topics:
         lines.append("- Recent passage topics (pick a different one): "
                      + "; ".join(reversed(topics)) + ".")
-    return "\n".join(lines)
+    return "\n".join(lines), mix, q7
 
 
 # ---------- commands ----------
 
 def cmd_brief(args):
     wb = open_book(args.file)
-    settings = build_settings(wb)
+    settings, _, _ = build_settings(wb)
     today = dt.date.today().isoformat()
     print(f"Settings for {today}:\n{settings}\n")
     if not PROMPT_TEMPLATE.exists():
